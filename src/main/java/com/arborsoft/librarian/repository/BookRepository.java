@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Date;
 import java.util.Map;
 
 import static com.arborsoft.librarian.util.CollectionUtils.map;
@@ -110,5 +111,111 @@ public class BookRepository {
                 return CONVERTER_BOOK.map((Node) map.get("book"));
             }
         }).singleOrNull();
+    }
+
+    public FluentIterable<Book> findBooksWrittenBefore(Date date) throws Exception {
+        Assert.notNull(date, "Date is null");
+
+        Execute query = CypherQuery
+                .match(node("book").label("Book"))
+                .where(
+                        and(
+                                has(identifier("book").property("writtenDate")),
+                                identifier("book").property("writtenDate").lt(date.getTime())
+                        )
+                )
+                .returns(identifier("book"));
+
+        Map<String, Object> param = map();
+
+        return FluentIterable.from(this.template.query(query, param).to(Book.class, new ResultConverter<Map<String, Object>, Book>() {
+            @Override
+            public Book convert(Map<String, Object> map, Class<Book> aClass) {
+                return CONVERTER_BOOK.map((Node) map.get("book"));
+            }
+        }));
+    }
+
+    public FluentIterable<Book> findBooksWrittenAfter(Date date) throws Exception {
+        Assert.notNull(date, "Date is null");
+
+        Execute query = CypherQuery
+                .match(node("book").label("Book"))
+                .where(
+                        and(
+                                has(identifier("book").property("writtenDate")),
+                                identifier("book").property("writtenDate").gt(date.getTime())
+                        )
+                )
+                .returns(identifier("book"));
+
+        Map<String, Object> param = map();
+
+        return FluentIterable.from(this.template.query(query, param).to(Book.class, new ResultConverter<Map<String, Object>, Book>() {
+            @Override
+            public Book convert(Map<String, Object> map, Class<Book> aClass) {
+                return CONVERTER_BOOK.map((Node) map.get("book"));
+            }
+        }));
+    }
+
+    public FluentIterable<Book> findBooksPublishedBefore(Date date) throws Exception {
+        Assert.notNull(date, "Date is null");
+
+        Execute query = CypherQuery
+                .match(node("book").label("Book"))
+                .where(
+                        and(
+                                has(identifier("book").property("publishedDate")),
+                                identifier("book").property("publishedDate").lt(date.getTime())
+                        )
+                )
+                .returns(identifier("book"));
+
+        Map<String, Object> param = map();
+
+        return FluentIterable.from(this.template.query(query, param).to(Book.class, new ResultConverter<Map<String, Object>, Book>() {
+            @Override
+            public Book convert(Map<String, Object> map, Class<Book> aClass) {
+                return CONVERTER_BOOK.map((Node) map.get("book"));
+            }
+        }));
+    }
+
+    public FluentIterable<Book> findBooksPublishedAfter(Date date) throws Exception {
+        Assert.notNull(date, "Date is null");
+
+        Execute query = CypherQuery
+                .match(node("book").label("Book"))
+                .where(
+                        and(
+                                has(identifier("book").property("publishedDate")),
+                                identifier("book").property("publishedDate").gt(date.getTime())
+                        )
+                )
+                .returns(identifier("book"));
+
+        Map<String, Object> param = map();
+
+        return FluentIterable.from(this.template.query(query, param).to(Book.class, new ResultConverter<Map<String, Object>, Book>() {
+            @Override
+            public Book convert(Map<String, Object> map, Class<Book> aClass) {
+                return CONVERTER_BOOK.map((Node) map.get("book"));
+            }
+        }));
+    }
+
+    public void setAuthorToBook(Book book, Author author) throws Exception {
+        Assert.notNull(book, "Book is null");
+        Assert.notNull(author, "Author is null");
+
+        Execute query = CypherQuery
+                .start(nodesById("book", book.getId()), nodesById("author", author.getId()))
+                .createUnique(node("author").out(Relationship.WRITES_BOOK).node("book"))
+                .createUnique(node("book").out(Relationship.WRITTEN_BY).node("author"));
+
+        Map<String, Object> param = map();
+
+        this.template.query(query, param);
     }
 }
