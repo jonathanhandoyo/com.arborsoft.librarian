@@ -210,9 +210,12 @@ public class BookRepository {
         Assert.notNull(author, "Author is null");
 
         Execute query = CypherQuery
-                .start(nodesById("book", book.getId()), nodesById("author", author.getId()))
-                .createUnique(node("author").out(Relationship.WRITES_BOOK).node("book"))
-                .createUnique(node("book").out(Relationship.WRITTEN_BY).node("author"));
+                .start(
+                        nodesById("book", book.getId()),
+                        nodesById("author", author.getId()))
+                .createUnique(
+                        node("author").out(Relationship.WRITES_BOOK).node("book"),
+                        node("book").out(Relationship.WRITTEN_BY).node("author"));
 
         Map<String, Object> param = map();
 
